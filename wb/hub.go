@@ -20,6 +20,7 @@ type Hub struct {
 	register   chan *Client
 	unregister chan *Client
 	mutex      *sync.Mutex
+	broadcast  chan []byte
 }
 
 func NewHub() *Hub {
@@ -28,6 +29,7 @@ func NewHub() *Hub {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		mutex:      &sync.Mutex{},
+		broadcast:  make(chan []byte),
 	}
 }
 
@@ -50,6 +52,16 @@ func (hub *Hub) Run() {
 			hub.onConnect(client)
 		case client := <-hub.unregister:
 			hub.onDisconnect(client)
+		case msg := <-hub.broadcast:
+			hub.Broadcast(msg, nil)
+			// for cl := range hub.clients {
+			// 	select {
+			// 	case cl. <- msg:
+			// 	default:
+			// 		// close(client.outbound)
+			// 		// delete(hub., client)
+			// 	}
+			// }
 		}
 	}
 }
