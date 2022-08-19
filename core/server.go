@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ecolque/shipedgemodule/wb"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 	"gorm.io/gorm"
@@ -20,12 +21,14 @@ type Config struct {
 type Server interface {
 	Config() *Config
 	PQ() *gorm.DB
+	Hub() *wb.Hub
 }
 
 type Broker struct {
 	config *Config
 	router *mux.Router
 	pq     *gorm.DB
+	hub    *wb.Hub
 }
 
 func (b *Broker) Config() *Config {
@@ -33,6 +36,10 @@ func (b *Broker) Config() *Config {
 }
 func (b *Broker) PQ() *gorm.DB {
 	return b.pq
+}
+
+func (b *Broker) Hub() *wb.Hub {
+	return b.hub
 }
 
 func NewServer(ctx context.Context, config *Config, db *gorm.DB) (*Broker, error) {
@@ -59,6 +66,7 @@ func (b *Broker) Start(binder func(s Server, r *mux.Router)) {
 		Addr:    b.config.Port,
 		Handler: handler,
 	}
+	go b.hub.Run()
 	binder(b, b.router)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal("ListenAndServe:", err)
