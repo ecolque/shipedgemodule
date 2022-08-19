@@ -56,6 +56,7 @@ func NewServer(ctx context.Context, config *Config, db *gorm.DB) (*Broker, error
 		config: config,
 		router: mux.NewRouter(),
 		pq:     db,
+		hub:    wb.NewHub(),
 	}, nil
 }
 
