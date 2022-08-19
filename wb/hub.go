@@ -43,6 +43,7 @@ func (hub *Hub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	hub.register <- client
 
 	go client.Write()
+	go client.Read()
 }
 
 func (hub *Hub) Run() {
